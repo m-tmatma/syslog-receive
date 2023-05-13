@@ -1,8 +1,8 @@
 use std::net::UdpSocket;
 use std::str;
 use std::thread;
-use std::fs::File;
 use std::io::Write;
+use std::fs::OpenOptions;
 
 fn main() -> std::io::Result<()> {
     let socket = UdpSocket::bind("0.0.0.0:514")?;
@@ -14,8 +14,11 @@ fn main() -> std::io::Result<()> {
                 thread::spawn(move || {
                     let path = format!("{}.txt", src_addr.ip().to_string());
                     println!("{}", &path);
-
-                    let mut file = File::options().append(true).open(path).unwrap();
+                    let mut file = OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .append(true)
+                    .open(path).unwrap();
                     let buf = &mut buf[..buf_size];
                     let req_msg = str::from_utf8(&buf).unwrap();
                     let message = format!("request message: {0: >8} {1} {2}", buf_size, src_addr, req_msg);
